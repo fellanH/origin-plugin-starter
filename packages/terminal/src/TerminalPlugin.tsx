@@ -17,6 +17,10 @@ import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import { WebglAddon } from "@xterm/addon-webgl";
 import { ClipboardAddon } from "@xterm/addon-clipboard";
+import { WebLinksAddon } from "@xterm/addon-web-links";
+import { SearchAddon } from "@xterm/addon-search";
+import { Unicode11Addon } from "@xterm/addon-unicode11";
+import { ImageAddon } from "@xterm/addon-image";
 import "@xterm/xterm/css/xterm.css";
 
 import { resolveConfig } from "./config";
@@ -100,12 +104,25 @@ export default function TerminalPlugin({ context }: { context: IframePluginConte
       fontSize: 13,
       theme: resolveXtermTheme(context.theme),
       cursorBlink: true,
+      scrollback: 10_000,
     });
 
     const fitAddon = new FitAddon();
     const clipboardAddon = new ClipboardAddon();
+    const webLinksAddon = new WebLinksAddon();
+    const searchAddon = new SearchAddon();
+    const unicode11Addon = new Unicode11Addon();
+    const imageAddon = new ImageAddon();
+
     term.loadAddon(fitAddon);
     term.loadAddon(clipboardAddon);
+    term.loadAddon(webLinksAddon);
+    term.loadAddon(searchAddon);
+    term.loadAddon(unicode11Addon);
+    term.loadAddon(imageAddon);
+
+    // Activate Unicode 11 for proper wide-char / emoji rendering.
+    term.unicode.activeVersion = "11";
 
     const webglAddon = new WebglAddon();
     webglAddon.onContextLoss(() => webglAddon.dispose());
@@ -151,6 +168,9 @@ export default function TerminalPlugin({ context }: { context: IframePluginConte
       id: context.cardId,
       cols,
       rows,
+      env: {
+        TERM_PROGRAM_VERSION: "0.1.0",
+      },
     }).catch(console.error);
 
     let resizeTimer: ReturnType<typeof setTimeout> | null = null;
